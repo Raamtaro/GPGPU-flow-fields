@@ -67,7 +67,7 @@ window.addEventListener('resize', () =>
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(35, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(4.5, 4, 11)
+camera.position.set(4.5, 4, 6)
 scene.add(camera)
 
 // Controls
@@ -91,7 +91,18 @@ renderer.setClearColor(debugObject.clearColor)
  * Base Geometry
  */
 const baseGeometry = {}
-baseGeometry.instance = gltf.scene.children[0].geometry
+// baseGeometry.instance = new THREE.SphereGeometry(3) //Hello World
+// baseGeometry.instance = gltf.scene.children[0].geometry //uncomment if using the lesson provided model.glb
+
+//Lotus traverse ---> baseGeometry.instance
+gltf.scene.traverse((child) => {
+    if(child.isMesh) {
+        baseGeometry.instance = child.geometry
+
+
+        return
+    }
+})
 baseGeometry.count = baseGeometry.instance.attributes.position.count
 
 /**
@@ -128,7 +139,7 @@ gpgpu.computation.init()
 
 //Debug plane
 gpgpu.debug = new THREE.Mesh(
-    new THREE.PlaneGeometry(3, 3),
+    new THREE.PlaneGeometry(2, 2),
     new THREE.MeshBasicMaterial(
         {
             map: gpgpu.computation.getCurrentRenderTarget(gpgpu.particlesVariable).texture
