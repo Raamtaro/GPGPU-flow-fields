@@ -67,7 +67,7 @@ window.addEventListener('resize', () =>
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(35, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(4.5, 4, 6)
+camera.position.set(4.5, 4, 11)
 scene.add(camera)
 
 // Controls
@@ -97,7 +97,14 @@ const baseGeometry = {}
 //Lotus traverse ---> baseGeometry.instance
 gltf.scene.traverse((child) => {
     if(child.isMesh) {
+
+        // child.scale.set(3, 3, 3)
+
         baseGeometry.instance = child.geometry
+
+
+        
+        console.log(baseGeometry.instance)
 
 
         return
@@ -139,7 +146,7 @@ gpgpu.computation.init()
 
 //Debug plane
 gpgpu.debug = new THREE.Mesh(
-    new THREE.PlaneGeometry(2, 2),
+    new THREE.PlaneGeometry(3, 3),
     new THREE.MeshBasicMaterial(
         {
             map: gpgpu.computation.getCurrentRenderTarget(gpgpu.particlesVariable).texture
@@ -187,7 +194,7 @@ particles.material = new THREE.ShaderMaterial({
     fragmentShader: particlesFragmentShader,
     uniforms:
     {
-        uSize: new THREE.Uniform(0.4),
+        uSize: new THREE.Uniform(0.063),
         uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
         uParticlesTexture: new THREE.Uniform()
     }
