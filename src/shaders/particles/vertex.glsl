@@ -5,6 +5,7 @@ uniform sampler2D uParticlesTexture;
 attribute vec2 aParticlesUv;
 
 varying vec3 vColor;
+varying vec2 vUv;
 
 void main()
 {
@@ -21,5 +22,6 @@ void main()
     gl_PointSize *= (1.0 / - viewPosition.z);
 
     // Varyings
-    vColor = vec3(1.0);
+    vUv = uv;
+    vColor = vec3(vUv, 0.0);
 }

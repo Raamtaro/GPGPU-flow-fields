@@ -84,7 +84,7 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(sizes.pixelRatio)
 
-debugObject.clearColor = '#29191f'
+debugObject.clearColor = '#7f7a7c'
 renderer.setClearColor(debugObject.clearColor)
 
 /**
@@ -167,6 +167,7 @@ const particles = {}
 
 // Geometry
 const particlesUvArray = new Float32Array(baseGeometry.count * 2)
+const sizesArray = new Float32Array(baseGeometry.count)
 
 for(let y = 0; y < gpgpu.size; y++)
     {
@@ -181,6 +182,9 @@ for(let y = 0; y < gpgpu.size; y++)
 
             particlesUvArray[i2 + 0] = uvX;
             particlesUvArray[i2 + 1] = uvY;
+
+            //size
+            sizesArray[i] = Math.random()
         }
     }
 
@@ -194,7 +198,7 @@ particles.material = new THREE.ShaderMaterial({
     fragmentShader: particlesFragmentShader,
     uniforms:
     {
-        uSize: new THREE.Uniform(0.063),
+        uSize: new THREE.Uniform(0.009),
         uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
         uParticlesTexture: new THREE.Uniform()
     }
@@ -202,6 +206,7 @@ particles.material = new THREE.ShaderMaterial({
 
 // Points
 particles.points = new THREE.Points(particles.geometry, particles.material)
+particles.points.frustumCulled = false
 scene.add(particles.points)
 
 /**
