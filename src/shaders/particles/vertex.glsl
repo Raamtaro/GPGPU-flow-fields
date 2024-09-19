@@ -16,6 +16,11 @@ void main()
     vec4 modelPosition = modelMatrix * vec4(particle.xyz, 1.0);
     vec4 viewPosition = viewMatrix * modelPosition;
     vec4 projectedPosition = projectionMatrix * viewPosition;
+
+
+
+
+    
     gl_Position = projectedPosition;
 
 
@@ -25,7 +30,7 @@ void main()
     float sizeOut = smoothstep(0.7, 1.0, particle.a);
     float size = min(sizeIn, sizeOut);
 
-    gl_PointSize = aSize * uSize * uResolution.y;
+    gl_PointSize = uSize * uResolution.y;
     gl_PointSize *= (1.0 / - viewPosition.z);
 
     // Varyings

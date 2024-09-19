@@ -65,10 +65,30 @@ window.addEventListener('resize', () =>
 /**
  * Camera
  */
+//Group
+const cameraGroup = new THREE.Group()
+scene.add(cameraGroup)
+
 // Base camera
 const camera = new THREE.PerspectiveCamera(35, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(4.5, 4, 11)
-scene.add(camera)
+camera.position.set(4.5, 14, 20)
+cameraGroup.add(camera)
+
+/**
+ * Basic Parallax/Cursor tracking setup. Might be considering raycaster soon for interactive particle effects, so may modify.
+ */
+
+//Cursor
+const cursor = {}
+cursor.x = 0;
+cursor.y = 0;
+
+window.addEventListener('mousemove', (event) => {
+    cursor.x = event.clientX/sizes.width - 0.5; //dividing only by the width (or the height, in the Y direciton) will normalize values from 0 to 1. However.... For parallax, it's better to set our context from -0.5 to 0.5
+    cursor.y = event.clientY/sizes.height - 0.5;
+
+    console.log(`Mouse coordinates: (${cursor.x}, ${cursor.y})`)
+})
 
 // Controls
 const controls = new OrbitControls(camera, canvas)
@@ -147,9 +167,9 @@ gpgpu.computation.setVariableDependencies(gpgpu.particlesVariable, [gpgpu.partic
 gpgpu.particlesVariable.material.uniforms.uTime = new THREE.Uniform(0)
 gpgpu.particlesVariable.material.uniforms.uDeltaTime = new THREE.Uniform(0)
 gpgpu.particlesVariable.material.uniforms.uBase = new THREE.Uniform(baseParticlesTexture)
-gpgpu.particlesVariable.material.uniforms.uFlowFieldInfluence = new THREE.Uniform(0.5)
-gpgpu.particlesVariable.material.uniforms.uFlowFieldStrength = new THREE.Uniform(2)
-gpgpu.particlesVariable.material.uniforms.uFlowFieldFrequency = new THREE.Uniform(0.2)
+gpgpu.particlesVariable.material.uniforms.uFlowFieldInfluence = new THREE.Uniform(0.824)
+gpgpu.particlesVariable.material.uniforms.uFlowFieldStrength = new THREE.Uniform(1.129)
+gpgpu.particlesVariable.material.uniforms.uFlowFieldFrequency = new THREE.Uniform(0.708)
 
 //init
 gpgpu.computation.init()
@@ -241,15 +261,27 @@ const tick = () =>
     const elapsedTime = clock.getElapsedTime()
     const deltaTime = elapsedTime - previousTime
     previousTime = elapsedTime
+
+    //Overall Model Rotation
+    particles.points.rotateOnAxis(new THREE.Vector3(0, 1, 0), deltaTime*0.12)
     
     // Update controls
-    controls.update()
+    // controls.update()
 
     // GPGPU Update
     gpgpu.particlesVariable.material.uniforms.uTime.value = elapsedTime
     gpgpu.particlesVariable.material.uniforms.uDeltaTime.value = deltaTime
     gpgpu.computation.compute()
     particles.material.uniforms.uParticlesTexture.value = gpgpu.computation.getCurrentRenderTarget(gpgpu.particlesVariable).texture
+
+    //Parallax
+    const parallaxX = cursor.x * 0.3;
+    const parallaxY = - cursor.y * 0.3;
+
+    cameraGroup.position.x += (parallaxX - cameraGroup.position.x) * 5 * deltaTime;
+    cameraGroup.position.y += (parallaxY - cameraGroup.position.y) * 5 * deltaTime;
+
+    // console.log(cameraGroup.position)
 
     // Render normal scene
     renderer.render(scene, camera)
