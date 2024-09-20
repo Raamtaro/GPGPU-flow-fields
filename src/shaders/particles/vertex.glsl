@@ -35,7 +35,7 @@ void main()
 
     // Varyings
     vUv = uv;
-    vColor = vec3(aParticlesUv, 0.230351); //makes a cool color
+    vColor = vec3(aParticlesUv, 0.0); //makes a cool color
     
     // vColor = particle.xyz;
     // vColor = vec3(vUv, 0.0); //But for now I would like black

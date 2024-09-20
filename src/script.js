@@ -4,12 +4,18 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
 import GUI from 'lil-gui'
 
+//PostProcessing stuff
+import { EffectComposer, RenderPass, ShaderPass, GammaCorrectionShader, SMAAPass } from 'three/examples/jsm/Addons.js'
+
 // Shaders
 import particlesVertexShader from './shaders/particles/vertex.glsl'
 import particlesFragmentShader from './shaders/particles/fragment.glsl'
 import gpgpuParticlesShader from './shaders/gpgpu/particles.glsl'
+import postVertex from './shaders/post/vertex.glsl'
+import postFragment from './shaders/post/fragment.glsl'
 
 import { GPUComputationRenderer } from 'three/examples/jsm/Addons.js'
+
 
 /**
  * Base
@@ -60,6 +66,10 @@ window.addEventListener('resize', () =>
     // Update renderer
     renderer.setSize(sizes.width, sizes.height)
     renderer.setPixelRatio(sizes.pixelRatio)
+
+    //Update effectComposer
+    effectComposer.setSize(sizes.width, sizes.height)
+    effectComposer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
 /**
@@ -72,6 +82,7 @@ scene.add(cameraGroup)
 // Base camera
 const camera = new THREE.PerspectiveCamera(35, sizes.width / sizes.height, 0.1, 100)
 camera.position.set(4.5, 14, 20)
+camera.lookAt(0, 0, 0)
 cameraGroup.add(camera)
 
 /**
@@ -80,19 +91,47 @@ cameraGroup.add(camera)
 
 //Cursor
 const cursor = {}
-cursor.x = 0;
-cursor.y = 0;
+//Plx effect
+cursor.parallaxX = 0;
+cursor.parallaxY = 0;
+
+//RGB Shift effect
+cursor.mouse = new THREE.Vector2()
+cursor.followMouse = new THREE.Vector2()
+cursor.previousMouse = new THREE.Vector2()
+
+cursor.speed = 0
+cursor.targetSpeed = 0
+
+cursor.calculateSpeed = () => {
+    // console.log('running')
+    cursor.speed = Math.sqrt( (cursor.previousMouse.x - cursor.mouse.x)**2 + (cursor.previousMouse.y - cursor.mouse.y)**2 )
+
+    const ease = 0.05
+
+    cursor.targetSpeed -= ease * (cursor.targetSpeed - cursor.speed)
+    cursor.followMouse.x -= ease * (cursor.followMouse.x - cursor.mouse.x)
+    cursor.followMouse.y -= ease * (cursor.followMouse.y - cursor.mouse.y)
+
+    cursor.previousMouse.x = cursor.mouse.x
+    cursor.previousMouse.y = cursor.mouse.y
+}
 
 window.addEventListener('mousemove', (event) => {
-    cursor.x = event.clientX/sizes.width - 0.5; //dividing only by the width (or the height, in the Y direciton) will normalize values from 0 to 1. However.... For parallax, it's better to set our context from -0.5 to 0.5
-    cursor.y = event.clientY/sizes.height - 0.5;
+    cursor.parallaxX = event.clientX/sizes.width - 0.5; //dividing only by the width (or the height, in the Y direciton) will normalize values from 0 to 1. However.... For parallax, it's better to set our context from -0.5 to 0.5
+    cursor.parallaxY = event.clientY/sizes.height - 0.5;
 
-    // console.log(`Mouse coordinates: (${cursor.x}, ${cursor.y})`)
+    // console.log(`Mouse coordinates: (${cursor.parallaxX}, ${cursor.parallaxY})`)
+
+    cursor.mouse.x = (event.clientX / sizes.width) 
+    cursor.mouse.y =1.0 - (event.clientY / sizes.height) 
+    // console.log(cursor.mouse)
 })
 
 // Controls
-const controls = new OrbitControls(camera, canvas)
-controls.enableDamping = true
+// const controls = new OrbitControls(camera, canvas)
+// controls.enableDamping = true
+
 
 /**
  * Renderer
@@ -242,6 +281,60 @@ particles.points.frustumCulled = false
 scene.add(particles.points)
 
 /**
+ * Post Processing
+ */
+const renderTarget = new THREE.WebGLRenderTarget(
+    800,
+    600,
+    {
+        samples: renderer.getPixelRatio() === 1 ? 2 : 0
+    }
+) //For antialiasing
+
+//The Effect Composer
+const effectComposer = new EffectComposer(renderer, renderTarget)
+effectComposer.setSize(sizes.width, sizes.height)
+effectComposer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+//First Pass
+const renderPass = new RenderPass(scene, camera)
+effectComposer.addPass(renderPass)
+
+//CustomPost Pass
+const RGBShiftShader = {
+    uniforms: {
+        "tDiffuse": { value: null },   
+        "uResolution": { value: new THREE.Vector2(1.,window.innerHeight/window.innerWidth) },
+        "uMouse": { value: new THREE.Vector2(-10,-10) },
+        "uVelo": { value: 0 },     
+        "time": { value: 0 }
+    },
+    vertexShader: postVertex,
+    fragmentShader: postFragment,
+}
+
+const customPass = new ShaderPass(RGBShiftShader)
+effectComposer.addPass(customPass)
+
+
+
+
+//Last Pass is the Gamma Shader
+const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader)
+effectComposer.addPass(gammaCorrectionPass)
+
+//JK, last pass is anti-alias set up if necessary.
+if(renderer.getPixelRatio() === 1 && !renderer.capabilities.isWebGL2)
+    {
+        const smaaPass = new SMAAPass()
+        effectComposer.addPass(smaaPass)
+    
+        console.log('Using SMAA')
+    }
+
+
+
+/**
  * Tweaks
  */
 gui.addColor(debugObject, 'clearColor').onChange(() => { renderer.setClearColor(debugObject.clearColor) })
@@ -275,16 +368,20 @@ const tick = () =>
     particles.material.uniforms.uParticlesTexture.value = gpgpu.computation.getCurrentRenderTarget(gpgpu.particlesVariable).texture
 
     //Parallax
-    const parallaxX = cursor.x * 0.3;
-    const parallaxY = - cursor.y * 0.3;
+    const parallaxX = cursor.parallaxX * 0.3;
+    const parallaxY = - cursor.parallaxY * 0.3;
 
     cameraGroup.position.x += (parallaxX - cameraGroup.position.x) * 5 * deltaTime;
     cameraGroup.position.y += (parallaxY - cameraGroup.position.y) * 5 * deltaTime;
 
+
+    //RGB Updates
+    cursor.calculateSpeed()
+
     // console.log(cameraGroup.position)
 
     // Render normal scene
-    renderer.render(scene, camera)
+    effectComposer.render(scene, camera)
 
     // Call tick again on the next frame
     window.requestAnimationFrame(tick)
