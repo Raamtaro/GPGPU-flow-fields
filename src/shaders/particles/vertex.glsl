@@ -30,12 +30,21 @@ void main()
     float sizeOut = smoothstep(0.7, 1.0, particle.a);
     float size = min(sizeIn, sizeOut);
 
-    gl_PointSize = uSize * uResolution.y;
+    gl_PointSize = aSize * uSize * uResolution.y;
     gl_PointSize *= (1.0 / - viewPosition.z);
 
     // Varyings
     vUv = uv;
-    // vColor = vec3(aParticlesUv, 0.35); //makes a cool color
+    vColor = vec3(aParticlesUv, 0.230351); //makes a cool color
+    
     // vColor = particle.xyz;
-    vColor = vec3(vUv, 0.0); //But for now I would like black
+    // vColor = vec3(vUv, 0.0); //But for now I would like black
+
+    // vec3 blackColor = vec3(vUv, 0.0);
+    // vec3 uvColor = vec3(aParticlesUv, 0.230351);
+    // float strength = distance(aParticlesUv, vec2(0.5));
+
+    // vColor = mix(blackColor, uvColor, strength);
+
+
 }

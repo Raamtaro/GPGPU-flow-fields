@@ -87,7 +87,7 @@ window.addEventListener('mousemove', (event) => {
     cursor.x = event.clientX/sizes.width - 0.5; //dividing only by the width (or the height, in the Y direciton) will normalize values from 0 to 1. However.... For parallax, it's better to set our context from -0.5 to 0.5
     cursor.y = event.clientY/sizes.height - 0.5;
 
-    console.log(`Mouse coordinates: (${cursor.x}, ${cursor.y})`)
+    // console.log(`Mouse coordinates: (${cursor.x}, ${cursor.y})`)
 })
 
 // Controls
@@ -230,7 +230,7 @@ particles.material = new THREE.ShaderMaterial({
     fragmentShader: particlesFragmentShader,
     uniforms:
     {
-        uSize: new THREE.Uniform(0.023),
+        uSize: new THREE.Uniform(0.079),
         uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
         uParticlesTexture: new THREE.Uniform()
     }
