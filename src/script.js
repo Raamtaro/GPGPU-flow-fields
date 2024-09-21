@@ -16,6 +16,8 @@ import postFragment from './shaders/post/fragment.glsl'
 
 import { GPUComputationRenderer } from 'three/examples/jsm/Addons.js'
 
+import '/style.css'
+
 
 /**
  * Base
@@ -102,6 +104,7 @@ cursor.parallaxY = 0;
 //Custom Cursor
 const customCursor = document.getElementById('cursor');
 
+
 //RGB Shift effect
 cursor.mouse = new THREE.Vector2()
 cursor.followMouse = new THREE.Vector2()
@@ -135,6 +138,7 @@ window.addEventListener('mousemove', (event) => {
     // console.log(cursor.mouse)
 
     customCursor.style.transform = `translate(${event.clientX - 10}px, ${event.clientY - 10}px)`;
+    // document.body.style.cursor = 'none'
 })
 
 // Controls
@@ -155,7 +159,7 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(sizes.pixelRatio)
 
 debugObject.clearColor = '#7f7a7c'
-renderer.setClearColor(debugObject.clearColor, 0.0)
+renderer.setClearColor(debugObject.clearColor)
 
 /**
  * Base Geometry
@@ -217,7 +221,7 @@ gpgpu.computation.setVariableDependencies(gpgpu.particlesVariable, [gpgpu.partic
 gpgpu.particlesVariable.material.uniforms.uTime = new THREE.Uniform(0)
 gpgpu.particlesVariable.material.uniforms.uDeltaTime = new THREE.Uniform(0)
 gpgpu.particlesVariable.material.uniforms.uBase = new THREE.Uniform(baseParticlesTexture)
-gpgpu.particlesVariable.material.uniforms.uFlowFieldInfluence = new THREE.Uniform(0.824)
+gpgpu.particlesVariable.material.uniforms.uFlowFieldInfluence = new THREE.Uniform(0.974)
 gpgpu.particlesVariable.material.uniforms.uFlowFieldStrength = new THREE.Uniform(1.129)
 gpgpu.particlesVariable.material.uniforms.uFlowFieldFrequency = new THREE.Uniform(0.708)
 
@@ -354,6 +358,10 @@ gui.add(particles.material.uniforms.uSize, 'value').min(0).max(1).step(0.001).na
 gui.add(gpgpu.particlesVariable.material.uniforms.uFlowFieldInfluence, 'value').min(0).max(1).step(0.001).name('uFlowfieldInfluence')
 gui.add(gpgpu.particlesVariable.material.uniforms.uFlowFieldStrength, 'value').min(0).max(10).step(0.001).name('uFlowfieldStrength')
 gui.add(gpgpu.particlesVariable.material.uniforms.uFlowFieldFrequency, 'value').min(0).max(1).step(0.001).name('uFlowfieldFrequency')
+
+gui.destroy()
+
+
 
 /**
  * Animate

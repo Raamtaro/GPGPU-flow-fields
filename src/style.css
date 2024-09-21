@@ -2,6 +2,7 @@
 {
     margin: 0;
     padding: 0;
+    
 }
 
 html,
@@ -9,7 +10,7 @@ body
 {
     overflow: hidden;
     cursor: none;
-    background-color: #7f7a7c;
+    /* background-color: #7f7a7c; */
 }
 
 #cursor {
@@ -20,7 +21,7 @@ body
     height: 20px;
     border-radius: 50%;
     color: white;
-    background-color: white;
+    background-color: #7f7a7c;
     pointer-events: none; /* Allow clicks to pass through */
     mix-blend-mode: difference; /* Invert colors under the cursor */
     z-index: 10; /* Ensure it's on top */
@@ -33,6 +34,7 @@ body
     left: 0;
     outline: none;
     z-index: 1;
+    
     /* background: transparent; */
 }
 
