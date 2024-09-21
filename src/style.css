@@ -8,6 +8,22 @@ html,
 body
 {
     overflow: hidden;
+    cursor: none;
+    background-color: #7f7a7c;
+}
+
+#cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 20px; /* Adjust size as needed */
+    height: 20px;
+    border-radius: 50%;
+    color: white;
+    background-color: white;
+    pointer-events: none; /* Allow clicks to pass through */
+    mix-blend-mode: difference; /* Invert colors under the cursor */
+    z-index: 10; /* Ensure it's on top */
 }
 
 .webgl
@@ -16,4 +32,12 @@ body
     top: 0;
     left: 0;
     outline: none;
+    z-index: 1;
+    /* background: transparent; */
+}
+
+.test {
+    position: relative;
+    z-index: 10;
+    color: white;
 }

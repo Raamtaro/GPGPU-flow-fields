@@ -70,6 +70,10 @@ window.addEventListener('resize', () =>
     //Update effectComposer
     effectComposer.setSize(sizes.width, sizes.height)
     effectComposer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+    //Update customPass Uniforms
+    customPass.uniforms.uResolution.value.y = sizes.height / sizes.width
+    
 })
 
 /**
@@ -94,6 +98,9 @@ const cursor = {}
 //Plx effect
 cursor.parallaxX = 0;
 cursor.parallaxY = 0;
+
+//Custom Cursor
+const customCursor = document.getElementById('cursor');
 
 //RGB Shift effect
 cursor.mouse = new THREE.Vector2()
@@ -126,6 +133,8 @@ window.addEventListener('mousemove', (event) => {
     cursor.mouse.x = (event.clientX / sizes.width) 
     cursor.mouse.y =1.0 - (event.clientY / sizes.height) 
     // console.log(cursor.mouse)
+
+    customCursor.style.transform = `translate(${event.clientX - 10}px, ${event.clientY - 10}px)`;
 })
 
 // Controls
@@ -139,12 +148,14 @@ window.addEventListener('mousemove', (event) => {
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas,
     antialias: true,
+    alpha: true,
 })
+
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(sizes.pixelRatio)
 
 debugObject.clearColor = '#7f7a7c'
-renderer.setClearColor(debugObject.clearColor)
+renderer.setClearColor(debugObject.clearColor, 0.0)
 
 /**
  * Base Geometry
@@ -269,7 +280,7 @@ particles.material = new THREE.ShaderMaterial({
     fragmentShader: particlesFragmentShader,
     uniforms:
     {
-        uSize: new THREE.Uniform(0.079),
+        uSize: new THREE.Uniform(0.023099),
         uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
         uParticlesTexture: new THREE.Uniform()
     }
@@ -314,6 +325,7 @@ const RGBShiftShader = {
 }
 
 const customPass = new ShaderPass(RGBShiftShader)
+customPass.renderToScreen = true
 effectComposer.addPass(customPass)
 
 
@@ -377,6 +389,12 @@ const tick = () =>
 
     //RGB Updates
     cursor.calculateSpeed()
+    // customPass.uniforms.time.value = elapsedTime //I don't really use this in the shader and so I'm going to comment out
+    customPass.uniforms.uMouse.value = cursor.followMouse
+    customPass.uniforms.uVelo.value = Math.min(cursor.targetSpeed, 0.05)
+    cursor.targetSpeed *= 0.999;
+
+    
 
     // console.log(cameraGroup.position)
 
