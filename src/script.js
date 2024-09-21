@@ -18,6 +18,8 @@ import { GPUComputationRenderer } from 'three/examples/jsm/Addons.js'
 
 import '/style.css'
 
+import Lenis from 'lenis'
+
 
 /**
  * Base

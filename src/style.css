@@ -17,11 +17,11 @@ body
     position: fixed;
     top: 0;
     left: 0;
-    width: 20px; /* Adjust size as needed */
-    height: 20px;
+    width: 25px; /* Adjust size as needed */
+    height: 25px;
     border-radius: 50%;
     color: white;
-    background-color: #7f7a7c;
+    background-color: #9e5a75;
     pointer-events: none; /* Allow clicks to pass through */
     mix-blend-mode: difference; /* Invert colors under the cursor */
     z-index: 10; /* Ensure it's on top */

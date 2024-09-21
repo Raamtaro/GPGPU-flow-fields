@@ -35,16 +35,11 @@ void main()
 
     // Varyings
     vUv = uv;
-    // vColor = vec3(aParticlesUv, 0.0); //makes a cool color
-    
-    // vColor = particle.xyz;
-    // vColor = vec3(vUv, 0.0); //But for now I would like black
+    // vColor = vec3(aParticlesUv, 0.0); //RGB Hello world Scheme
+    // vColor = vec3(vUv, 0.0); //Black
 
     vec3 blackColor = vec3(vUv, 0.0);
-    // vec3 uvColor = vec3(aParticlesUv, 0.230351);
-    // float strength = distance(aParticlesUv, vec2(0.5));
 
-    // vColor = mix(blackColor, uvColor, strength);
 
 
 }
