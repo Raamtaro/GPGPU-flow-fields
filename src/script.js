@@ -94,14 +94,31 @@ camera.lookAt(0, 0, 0)
 cameraGroup.add(camera)
 
 /**
- * Basic Parallax/Cursor tracking setup. Might be considering raycaster soon for interactive particle effects, so may modify.
+ * RayCaster Setup
  */
+const raycaster = new THREE.Raycaster()
+const pointer = new THREE.Vector2(9999, 9999)
+
+window.addEventListener('pointermove', (event) => {
+    pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    // console.log(pointer)
+})
+
+/**
+ * Basic Parallax/Cursor tracking setup. 
+ */
+
 
 //Cursor
 const cursor = {}
 //Plx effect
 cursor.parallaxX = 0;
 cursor.parallaxY = 0;
+
+//Repel Effect
+
 
 //Custom Cursor
 const customCursor = document.getElementById('cursor');
@@ -119,7 +136,7 @@ cursor.calculateSpeed = () => {
     // console.log('running')
     cursor.speed = Math.sqrt( (cursor.previousMouse.x - cursor.mouse.x)**2 + (cursor.previousMouse.y - cursor.mouse.y)**2 )
 
-    const ease = 0.05
+    const ease = 0.1
 
     cursor.targetSpeed -= ease * (cursor.targetSpeed - cursor.speed)
     cursor.followMouse.x -= ease * (cursor.followMouse.x - cursor.mouse.x)
@@ -139,7 +156,7 @@ window.addEventListener('mousemove', (event) => {
     cursor.mouse.y =1.0 - (event.clientY / sizes.height) 
     // console.log(cursor.mouse)
 
-    customCursor.style.transform = `translate(${event.clientX - 10}px, ${event.clientY - 10}px)`;
+    customCursor.style.transform = `translate(${event.clientX - 250}px, ${event.clientY - 250}px)`;
     // document.body.style.cursor = 'none'
 })
 
@@ -218,6 +235,7 @@ for (let i =0; i < baseGeometry.count; i++) {
 //Particles Variable
 gpgpu.particlesVariable = gpgpu.computation.addVariable('uParticles', gpgpuParticlesShader, baseParticlesTexture) //this is the texture for the particle positions
 gpgpu.computation.setVariableDependencies(gpgpu.particlesVariable, [gpgpu.particlesVariable])
+console.log(gpgpu.particlesVariable)
 
 //GPGPU Uniforms
 gpgpu.particlesVariable.material.uniforms.uTime = new THREE.Uniform(0)
@@ -226,6 +244,7 @@ gpgpu.particlesVariable.material.uniforms.uBase = new THREE.Uniform(baseParticle
 gpgpu.particlesVariable.material.uniforms.uFlowFieldInfluence = new THREE.Uniform(0.974)
 gpgpu.particlesVariable.material.uniforms.uFlowFieldStrength = new THREE.Uniform(1.129)
 gpgpu.particlesVariable.material.uniforms.uFlowFieldFrequency = new THREE.Uniform(0.708)
+gpgpu.particlesVariable.material.uniforms.uRepulsion = new THREE.Uniform(new THREE.Vector3());
 
 //init
 gpgpu.computation.init()
@@ -388,6 +407,17 @@ const tick = () =>
     gpgpu.particlesVariable.material.uniforms.uDeltaTime.value = deltaTime
     gpgpu.computation.compute()
     particles.material.uniforms.uParticlesTexture.value = gpgpu.computation.getCurrentRenderTarget(gpgpu.particlesVariable).texture
+
+    //raycaster stuff
+    raycaster.setFromCamera(pointer, camera);
+
+    const intersections = raycaster.intersectObject(particles.points)
+
+    if (intersections.length > 0) {
+        console.log(intersections)
+    }
+
+
 
     //Parallax
     const parallaxX = cursor.parallaxX * 0.3;
