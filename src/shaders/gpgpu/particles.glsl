@@ -4,6 +4,8 @@ uniform sampler2D uBase;
 uniform float uFlowFieldInfluence;
 uniform float uFlowFieldStrength;
 uniform float uFlowFieldFrequency;
+uniform vec3 uRepulsion;
+uniform float uBounds;
 
 #include ../includes/simplexNoise4d.glsl
 
@@ -15,6 +17,22 @@ void main() {
     vec4 particle = texture(uParticles, uv);
     vec4 base = texture(uBase, uv);
 
+    // float f;
+
+    // float dist;
+    // float distSquared;
+
+    // vec3 dir;
+    // dir = uRepulsion - particle.xyz;
+    // dir.z = 0.0;
+
+    // dist = length(dir);
+    // distSquared = dist * dist;
+
+    // float repelRadius = 150.0;
+    // float repelRadiusSquared = repelRadius * repelRadius;
+
+    // vec3 repulsionDirection;
 
     //Decay
     particle.a += 0.01;
@@ -30,10 +48,14 @@ void main() {
     else {
         //Strength
         float strength = simplexNoise4d(vec4(base.xyz * 0.2, time + 1.0));
-        // strength = smoothstep(0.0, 1.0, strength);
-
         float influence = (uFlowFieldInfluence - 0.5) * (- 2.0);
         strength = smoothstep(influence, 1.0, strength);
+
+        // //Cursor Effect
+        // if (dist < repelRadius) {
+        //     f = ( distSquared / repelRadiusSquared - 1.0 ) * uDeltaTime * 100.0;
+        //     repulsionDirection += normalize(dir) * f;
+        // }
         
         //Flow Field
         vec3 flowField = vec3(
@@ -42,8 +64,12 @@ void main() {
             simplexNoise4d(vec4(particle.xyz * uFlowFieldFrequency + 2.0, time))
         );
 
+
+        // repulsionDirection = normalize(repulsionDirection);
         flowField = normalize(flowField);
         particle.xyz += flowField * uDeltaTime * strength * uFlowFieldStrength;
+        // particle.xyz *= repulsionDirection;
+        
         particle.a += uDeltaTime * 0.3;
     }
 

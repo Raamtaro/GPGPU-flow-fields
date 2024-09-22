@@ -118,7 +118,8 @@ cursor.parallaxX = 0;
 cursor.parallaxY = 0;
 
 //Repel Effect
-
+cursor.repelX = 0;
+cursor.repelY = 0;
 
 //Custom Cursor
 const customCursor = document.getElementById('cursor');
@@ -158,6 +159,11 @@ window.addEventListener('mousemove', (event) => {
 
     customCursor.style.transform = `translate(${event.clientX - 250}px, ${event.clientY - 250}px)`;
     // document.body.style.cursor = 'none'
+
+    cursor.repelX = event.clientX - sizes.width/2
+    cursor.repelY = event.clientY - sizes.height/2
+
+    // console.log(cursor.repelX, cursor.repelY)
 })
 
 // Controls
@@ -230,7 +236,7 @@ for (let i =0; i < baseGeometry.count; i++) {
     baseParticlesTexture.image.data[i4 + 3] = Math.random()
 }
 
-// console.log(baseParticlesTexture.image.data)
+console.log(baseParticlesTexture.image.data)
 
 //Particles Variable
 gpgpu.particlesVariable = gpgpu.computation.addVariable('uParticles', gpgpuParticlesShader, baseParticlesTexture) //this is the texture for the particle positions
@@ -244,7 +250,8 @@ gpgpu.particlesVariable.material.uniforms.uBase = new THREE.Uniform(baseParticle
 gpgpu.particlesVariable.material.uniforms.uFlowFieldInfluence = new THREE.Uniform(0.974)
 gpgpu.particlesVariable.material.uniforms.uFlowFieldStrength = new THREE.Uniform(1.129)
 gpgpu.particlesVariable.material.uniforms.uFlowFieldFrequency = new THREE.Uniform(0.708)
-gpgpu.particlesVariable.material.uniforms.uRepulsion = new THREE.Uniform(new THREE.Vector3());
+gpgpu.particlesVariable.material.uniforms.uRepulsion = new THREE.Uniform(new THREE.Vector3())
+gpgpu.particlesVariable.material.uniforms.uBounds = new THREE.Uniform(gpgpu.size)
 
 //init
 gpgpu.computation.init()
@@ -405,6 +412,7 @@ const tick = () =>
     // GPGPU Update
     gpgpu.particlesVariable.material.uniforms.uTime.value = elapsedTime
     gpgpu.particlesVariable.material.uniforms.uDeltaTime.value = deltaTime
+    gpgpu.particlesVariable.material.uniforms.uRepulsion.value.set(0.5 * cursor.repelX / (sizes.width/2), - 0.5 * cursor.repelY /(sizes.height/2), 0)
     gpgpu.computation.compute()
     particles.material.uniforms.uParticlesTexture.value = gpgpu.computation.getCurrentRenderTarget(gpgpu.particlesVariable).texture
 
